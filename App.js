@@ -1,69 +1,51 @@
-import * as React from 'react';
-import { Platform, StatusBar, StyleSheet, View } from 'react-native';
-import { SplashScreen } from 'expo';
+import React from 'react';
+import { View, Text } from 'react-native';
+import { AppLoading } from 'expo';
+import { Asset } from 'expo-asset';
 import * as Font from 'expo-font';
-import { Ionicons } from '@expo/vector-icons';
-import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
 
-import BottomTabNavigator from './src/navigation/BottomTabNavigator';
-import useLinking from './src/navigation/useLinking';
+import fonts from 'app/src/fonts';
+import images from 'app/src/images';
 
-const Stack = createStackNavigator();
+class App extends React.Component {
+  constructor(props) {
+    super(props);
 
-export default function App(props) {
-  const [isLoadingComplete, setLoadingComplete] = React.useState(false);
-  const [initialNavigationState, setInitialNavigationState] = React.useState();
-  const containerRef = React.useRef();
-  const { getInitialState } = useLinking(containerRef);
+    this.state = {
+      isLoadingComplete: false,
+    };
+  }
 
-  // Load any resources or data that we need prior to rendering the app
-  React.useEffect(() => {
-    async function loadResourcesAndDataAsync() {
-      try {
-        SplashScreen.preventAutoHide();
+  loadResourceAsync = async () => {
+    await Asset.loadAsync(Object.keys(images).map((key) => images[key]));
+    await Font.loadAsync(fonts);
+    return true;
+  };
 
-        // Load our initial navigation state
-        setInitialNavigationState(await getInitialState());
+  render() {
+    const { isLoadingComplete } = this.state;
+    const { skipLoadingScreen } = this.props;
 
-        // Load fonts
-        await Font.loadAsync({
-          ...Ionicons.font,
-          'space-mono': require('./assets/fonts/SpaceMono-Regular.ttf'),
-        });
-      } catch (e) {
-        // We might want to provide this error information to an error reporting service
-        console.warn(e);
-      } finally {
-        setLoadingComplete(true);
-        SplashScreen.hide();
-      }
+    if (!isLoadingComplete && !skipLoadingScreen) {
+      return (
+        <AppLoading
+          startAsync={this.loadResourceAsync}
+          onError={(error) => console.warn(error)}
+          onFinish={() => this.setState({ isLoadingComplete: true })}
+        />
+      );
     }
 
-    loadResourcesAndDataAsync();
-  }, []);
-
-  if (!isLoadingComplete && !props.skipLoadingScreen) {
-    return null;
+    return (
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+        <Text>hello</Text>
+      </View>
+    );
   }
-  return (
-    <View style={styles.container}>
-      {Platform.OS === 'ios' && <StatusBar barStyle="default" />}
-      <NavigationContainer
-        ref={containerRef}
-        initialState={initialNavigationState}
-      >
-        <Stack.Navigator>
-          <Stack.Screen name="Root" component={BottomTabNavigator} />
-        </Stack.Navigator>
-      </NavigationContainer>
-    </View>
-  );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-});
+App.defaultProps = {
+  skipLoadingScreen: false,
+};
+
+export default App;
