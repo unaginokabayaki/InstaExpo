@@ -1,11 +1,14 @@
-import React from 'react';
+import * as React from 'react';
 import { View, Text } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
 import { AppLoading } from 'expo';
 import { Asset } from 'expo-asset';
 import * as Font from 'expo-font';
 
 import fonts from 'app/src/fonts';
 import images from 'app/src/images';
+
+import MainTabNavigator from 'app/src/navigation/MainTabNavigator';
 
 class App extends React.Component {
   constructor(props) {
@@ -37,9 +40,9 @@ class App extends React.Component {
     }
 
     return (
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-        <Text>hello</Text>
-      </View>
+      <NavigationContainer>
+        <MainTabNavigator />
+      </NavigationContainer>
     );
   }
 }
