@@ -1,5 +1,7 @@
 import * as React from 'react';
+import { View, Text } from 'react-native';
 import { Constants } from 'expo';
+import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
@@ -7,7 +9,6 @@ import { Ionicons } from '@expo/vector-icons';
 import TabBarIcon from '../components/TabBarIcon';
 import HomeScreen from 'app/src/screens/HomeScreen';
 import SearchScreen from 'app/src/screens/SearchScreen';
-import TakeScreen from 'app/src/screens/TakeScreen';
 import NotificationScreen from 'app/src/screens/NotificationScreen';
 import UserScreen from 'app/src/screens/UserScreen';
 
@@ -17,7 +18,7 @@ import {
   TakeTabIcon,
   NotificationTabIcon,
   MeTabIcon,
-  TabBar,
+  // TabBar,
 } from 'app/src/components/TabBarIcon';
 
 // const Stack = createStackNavigator();
@@ -26,7 +27,21 @@ const Tab = createBottomTabNavigator();
 
 const tabBarOptions = {};
 
-function MainTabNavigator() {
+function OpenTakeStack({ navigation }) {
+  navigation.addListener('tabPress', (e) => {
+    // Prevent default behavior
+    e.preventDefault();
+    navigation.navigate('TakeStack');
+  });
+  return null;
+}
+
+function MainTabNavigator({ navigation, route }) {
+  const routeName = route.state
+    ? route.state.routes[route.state.index].name
+    : route.params?.screen || 'HomeTab';
+  navigation.setOptions({ headerTitle: routeName });
+
   return (
     <Tab.Navigator
       initialRouteName="Home"
@@ -56,11 +71,11 @@ function MainTabNavigator() {
       />
       <Tab.Screen
         name="TakeTab"
-        component={TakeScreen}
-        options={{
+        component={OpenTakeStack}
+        options={() => ({
           tabBarLabel: 'Take',
           tabBarIcon: TakeTabIcon,
-        }}
+        })}
       />
       <Tab.Screen
         name="NotificationTab"
@@ -81,16 +96,5 @@ function MainTabNavigator() {
     </Tab.Navigator>
   );
 }
-
-// function MyStack() {
-//   return (
-//     <Stack.Navigator>
-//       <Stack.Screen name="Home" component={Home} />
-//       <Stack.Screen name="Notifications" component={Notifications} />
-//       <Stack.Screen name="Profile" component={Profile} />
-//       <Stack.Screen name="Settings" component={Settings} />
-//     </Stack.Navigator>
-//   );
-// }
 
 export default MainTabNavigator;

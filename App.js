@@ -1,6 +1,10 @@
 import * as React from 'react';
 import { View, Text } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
+import {
+  createStackNavigator,
+  TransitionPresets,
+} from '@react-navigation/stack';
 import { AppLoading } from 'expo';
 import { Asset } from 'expo-asset';
 import * as Font from 'expo-font';
@@ -8,7 +12,7 @@ import * as Font from 'expo-font';
 import fonts from 'app/src/fonts';
 import images from 'app/src/images';
 
-import MainTabNavigator from 'app/src/navigation/MainTabNavigator';
+import AppNavigator from 'app/src/navigation/AppNavigator';
 
 class App extends React.Component {
   constructor(props) {
@@ -39,11 +43,7 @@ class App extends React.Component {
       );
     }
 
-    return (
-      <NavigationContainer>
-        <MainTabNavigator />
-      </NavigationContainer>
-    );
+    return <AppNavigator />;
   }
 }
 
