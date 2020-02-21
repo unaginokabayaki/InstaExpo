@@ -6,7 +6,6 @@ import {
   TransitionPresets,
 } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Ionicons } from '@expo/vector-icons';
 
 import TakeScreen from 'app/src/screens/TakeScreen';
 import TakePublishScreen from 'app/src/screens/TakePublishScreen';
