@@ -1,5 +1,9 @@
 import * as React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import {
+  NavigationContainer,
+  useRoute,
+  useNavigationState,
+} from '@react-navigation/native';
 import {
   createStackNavigator,
   TransitionPresets,
@@ -39,7 +43,11 @@ export function MainStackNavigator() {
 
 function AppNavigator() {
   return (
-    <NavigationContainer>
+    <NavigationContainer
+      onStateChange={(state) => {
+        // console.log('state is ' + state);
+      }}
+    >
       <RootStack.Navigator
         initialRouteName="MainStack"
         screenOptions={{
