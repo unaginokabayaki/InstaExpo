@@ -35,7 +35,7 @@ class FlatList extends React.Component {
   render() {
     const { viewableItemIndices } = this.state;
     const { renderItem, extraData } = this.props;
-    console.log(viewableItemIndices);
+    // console.log(viewableItemIndices);
     // console.log(renderItem);
 
     return (

@@ -86,7 +86,7 @@ class HomeScreen extends React.Component {
           data={posts}
           keyExtractor={(item) => item.key}
           renderItem={({ item, index, separators }) => {
-            console.log(index);
+            // console.log(index);
             return (
               <Item
                 {...item}

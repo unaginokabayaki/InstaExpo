@@ -26,32 +26,38 @@ class NotificationScreen extends React.Component {
       notifications: [
         {
           post: {
+            pid: 1,
             type: 'photo',
             fileUri: 'https://dummyimage.com/400x400/000/fff.png&text=Post1',
           },
           from: {
+            uid: 1,
             img: 'https://dummyimage.com/40x40/fff/000.png&text=User1',
             name: 'User1',
           },
         },
         {
           post: {
+            pid: 2,
             type: 'photo',
             fileUri: 'https://dummyimage.com/400x400/000/fff.png&text=Post2',
           },
           from: {
-            img: 'https://dummyimage.com/40x40/fff/000.png&text=User1',
-            name: 'User1',
+            uid: 2,
+            img: 'https://dummyimage.com/40x40/fff/000.png&text=User2',
+            name: 'User2',
           },
         },
         {
           post: {
+            pid: 3,
             type: 'photo',
             fileUri: 'https://dummyimage.com/400x400/000/fff.png&text=Post3',
           },
           from: {
-            img: 'https://dummyimage.com/40x40/fff/000.png&text=User1',
-            name: 'User1',
+            uid: 3,
+            img: 'https://dummyimage.com/40x40/fff/000.png&text=User3',
+            name: 'User3',
           },
         },
       ],

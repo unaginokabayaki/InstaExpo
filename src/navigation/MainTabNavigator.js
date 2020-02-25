@@ -58,7 +58,7 @@ class MainTabNavigator extends React.Component {
         headerName = 'Notification';
         break;
       default:
-        headerName = 'Home';
+        headerName = routeName;
     }
 
     navigation.setOptions({ headerTitle: headerName, headerShown });
