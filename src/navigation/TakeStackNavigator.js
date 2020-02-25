@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Constants } from 'expo';
+import Constants from 'expo-constants';
 import { NavigationContainer } from '@react-navigation/native';
 import {
   createStackNavigator,

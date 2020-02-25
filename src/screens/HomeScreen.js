@@ -53,11 +53,17 @@ class HomeScreen extends React.Component {
     };
   }
 
-  onUserPress = (item) => {};
+  onUserPress = (item) => {
+    // ここにUserScreenに遷移する処理を書きます。
+  };
 
-  onMorePress = (item) => {};
+  onMorePress = (item) => {
+    // ここに投稿の共有をする処理を書きます。
+  };
 
-  onLikePress = (item) => {};
+  onLikePress = (item) => {
+    // ここにいいねの処理を書きます。
+  };
 
   onLinkPress = (url, txt) => {};
 
@@ -92,13 +98,13 @@ class HomeScreen extends React.Component {
               />
             );
           }}
-          ListFooterComponent={() =>
-            loading ? (
+          ListFooterComponent={() => {
+            return loading ? (
               <View style={styles.loading}>
                 <ActivityIndicator size="small" />
               </View>
-            ) : null
-          }
+            ) : null;
+          }}
         />
       </View>
     );
