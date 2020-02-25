@@ -49,7 +49,19 @@ class MainTabNavigator extends React.Component {
       : route.params?.screen || 'HomeTab';
     const headerShown = !['SearchTab'].includes(routeName);
 
-    navigation.setOptions({ headerTitle: routeName, headerShown });
+    let headerName = '';
+    switch (routeName) {
+      case 'HomeTab':
+        headerName = 'Home';
+        break;
+      case 'NotificationTab':
+        headerName = 'Notification';
+        break;
+      default:
+        headerName = 'Home';
+    }
+
+    navigation.setOptions({ headerTitle: headerName, headerShown });
 
     return (
       <Tab.Navigator

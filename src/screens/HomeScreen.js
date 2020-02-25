@@ -98,13 +98,13 @@ class HomeScreen extends React.Component {
               />
             );
           }}
-          ListFooterComponent={() => {
-            return loading ? (
+          ListFooterComponent={
+            loading ? (
               <View style={styles.loading}>
                 <ActivityIndicator size="small" />
               </View>
-            ) : null;
-          }}
+            ) : null
+          }
         />
       </View>
     );
