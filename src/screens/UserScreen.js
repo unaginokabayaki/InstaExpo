@@ -41,14 +41,17 @@ class UserScreen extends React.Component {
       },
       posts: [
         {
+          pid: 1,
           type: 'photo',
           thumbnail: 'https://dummyimage.com/400x400/ffd/000.png&text=Post1',
         },
         {
+          pid: 2,
           type: 'photo',
           thumbnail: 'https://dummyimage.com/400x400/fdf/000.png&text=Post2',
         },
         {
+          pid: 3,
           type: 'photo',
           thumbnail: 'https://dummyimage.com/400x400/dff/000.png&text=Post3',
         },
