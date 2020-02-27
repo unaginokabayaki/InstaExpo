@@ -12,12 +12,35 @@ import Constants from 'expo-constants';
 /* node_modules */
 import { Image } from 'react-native-expo-image-cache';
 import Hyperlink from 'react-native-hyperlink';
-// import LinkifyIt from 'linkify-it';
+import LinkifyIt from 'linkify-it';
 
 /* from app */
 import Avatar from 'app/src/components/Avatar';
 import IconButton from 'app/src/components/IconButton';
 import Text from 'app/src/components/Text';
+
+const linkify = new LinkifyIt();
+linkify.add('#', {
+  validate: (text, pos) => {
+    const tail = text.slice(pos);
+
+    if (!linkify.re.hashtag) {
+      linkify.re.hashtag = new RegExp(
+        /^[#]{0,2}?(w*[一-龠_ぁ-ん_ァ-ヴーａ-ｚＡ-Ｚa-zA-Z0-9]+|[a-zA-Z0-9_]+|[a-zA-Z0-9_]w*)/gi
+      );
+    }
+
+    if (linkify.re.hashtag.test(tail)) {
+      return tail.match(linkify.re.hashtag)[0].trim().length;
+    }
+
+    return 0;
+  },
+  normalize: (match) => {
+    // match.index += match.url.lastIndexOf('#');
+    // match.url = match.url.replace(/^#{0,}/, '#');
+  },
+});
 
 const defaultProps = {
   type: 'photo',
@@ -136,10 +159,15 @@ class Item extends React.Component {
         </View>
 
         {text !== '' && (
-          <Hyperlink onPress={onLinkPress} linkStyle={{ color: '#2980b9' }}>
-            <Text style={styles.text}>{text}</Text>
+          <Hyperlink
+            onPress={onLinkPress}
+            linkify={linkify}
+            linkStyle={{ color: '#2980b9' }}
+          >
+            <Text>{text}</Text>
           </Hyperlink>
         )}
+
         <Text style={styles.time}>{this.getRelativeTime(timestamp)}</Text>
       </View>
     );

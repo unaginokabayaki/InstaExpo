@@ -8,6 +8,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import Constants from 'expo-constants';
+import * as WebBrowser from 'expo-web-browser';
 
 import FlatList from 'app/src/components/FlatList';
 import Item from 'app/src/components/Item';
@@ -65,7 +66,19 @@ class HomeScreen extends React.Component {
     // ここにいいねの処理を書きます。
   };
 
-  onLinkPress = (url, txt) => {};
+  onLinkPress = (url, txt) => {
+    const { navigation } = this.props;
+    console.log(txt);
+
+    switch (txt[0]) {
+      case '#':
+        navigation.push('Tag', { tag: txt });
+        break;
+      default:
+        WebBrowser.openBrowserAsync(url);
+        break;
+    }
+  };
 
   render() {
     const { posts, fetching, loading } = this.state;
