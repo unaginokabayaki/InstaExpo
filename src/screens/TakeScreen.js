@@ -318,8 +318,8 @@ const styles = StyleSheet.create({
   },
 });
 
-export default function(props) {
-  return <TakeScreen {...props} navigation={useNavigation()} />;
-}
+// export default function(props) {
+//   return <TakeScreen {...props} navigation={useNavigation()} />;
+// }
 
-// export default TakeScreen;
+export default TakeScreen;
