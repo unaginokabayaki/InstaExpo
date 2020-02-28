@@ -18,16 +18,16 @@ function TakeStackNavigator() {
       <TakeStack.Screen
         name="Take"
         component={TakeScreen}
-        options={{
-          title: 'Take',
-        }}
+        // options={{
+        //   title: 'Take',
+        // }}
       />
       <TakeStack.Screen
         name="Pub"
         component={TakePublishScreen}
-        options={{
-          title: 'Pub',
-        }}
+        // options={{
+        //   title: 'TakePub',
+        // }}
       />
     </TakeStack.Navigator>
   );
