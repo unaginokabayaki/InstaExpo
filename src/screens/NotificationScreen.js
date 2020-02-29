@@ -35,6 +35,7 @@ class NotificationScreen extends React.Component {
             img: 'https://dummyimage.com/40x40/fff/000.png&text=User1',
             name: 'User1',
           },
+          key: '1',
         },
         {
           post: {
@@ -47,6 +48,7 @@ class NotificationScreen extends React.Component {
             img: 'https://dummyimage.com/40x40/fff/000.png&text=User2',
             name: 'User2',
           },
+          key: '',
         },
         {
           post: {
@@ -59,6 +61,7 @@ class NotificationScreen extends React.Component {
             img: 'https://dummyimage.com/40x40/fff/000.png&text=User3',
             name: 'User3',
           },
+          key: '3',
         },
       ],
       cursor: null,

@@ -58,7 +58,7 @@ class TagScreen extends React.Component {
           style={styles.thumbnails}
           numColumns={3}
           data={posts}
-          keyExtractor={(item) => item.key}
+          keyExtractor={(item) => item.pid.toString()}
           ListHeaderComponent={() => (
             <View style={styles.header}>
               <Text font="noto-sans-medium" style={styles.name}>

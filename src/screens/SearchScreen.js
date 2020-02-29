@@ -45,7 +45,7 @@ class SearchScreen extends React.Component {
         <View>
           <FlatList
             data={tags}
-            keyExtractor={(item) => item.key}
+            keyExtractor={(item) => item.name}
             ListHeaderComponent={() => (
               <View style={styles.header}>
                 <TextInput

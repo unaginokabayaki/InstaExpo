@@ -22,6 +22,7 @@ class HomeScreen extends React.Component {
     this.state = {
       posts: [
         {
+          pid: 1,
           text: '1つ目の投稿です。 #tag1',
           fileUri: 'https://dummyimage.com/400x400/000/fff.png&text=Post1',
           user: {
@@ -31,7 +32,8 @@ class HomeScreen extends React.Component {
           },
         },
         {
-          text: '1つ目の投稿です。 #tag2',
+          pid: 2,
+          text: '2つ目の投稿です。 #tag2',
           fileUri: 'https://dummyimage.com/400x400/000/fff.png&text=Post2',
           user: {
             uid: 1,
@@ -40,7 +42,8 @@ class HomeScreen extends React.Component {
           },
         },
         {
-          text: '1つ目の投稿です。 #tag3',
+          pid: 3,
+          text: '3つ目の投稿です。 #tag3',
           fileUri: 'https://dummyimage.com/400x400/000/fff.png&text=Post3',
           user: {
             uid: 1,
@@ -97,7 +100,7 @@ class HomeScreen extends React.Component {
       <View style={styles.container} testID="Home">
         <FlatList
           data={posts}
-          keyExtractor={(item) => item.key}
+          keyExtractor={(item) => item.pid.toString()}
           renderItem={({ item, index, separators }) => {
             // console.log(index);
             return (

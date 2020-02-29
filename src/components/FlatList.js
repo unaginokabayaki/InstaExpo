@@ -13,8 +13,8 @@ class FlatList extends React.Component {
     this.viewabilityConfig = {
       minimumViewTime: 1,
       // waitForInteraction: true,
-      viewAreaCoveragePercentThreshold: 0,
-      // itemVisiblePercentThreshold: 0,
+      viewAreaCoveragePercentThreshold: 30,
+      // itemVisiblePercentThreshold: 1,
     };
 
     this.state = {
@@ -23,8 +23,14 @@ class FlatList extends React.Component {
   }
 
   onViewableItemsChanged = ({ viewableItems, changed }) => {
-    console.log('changed');
-    // console.log(viewableItems);
+    console.log(
+      'Visible items are',
+      viewableItems.map((item) => item.item.text)
+    );
+    // console.log(
+    //   'Changed in this iteration',
+    //   changed.map((item) => item.item.text)
+    // );
     if (viewableItems.length) {
       this.setState({
         viewableItemIndices: viewableItems.map((item) => item.index),
@@ -43,7 +49,7 @@ class FlatList extends React.Component {
         {...this.props}
         // renderItem={(props) => renderItem({ ...props, viewableItemIndices })}
         // extraData={{ ...extraData, viewableItemIndices }}
-        // viewabilityConfig={this.viewabilityConfig}
+        viewabilityConfig={this.viewabilityConfig}
         onViewableItemsChanged={this.onViewableItemsChanged}
       />
     );
