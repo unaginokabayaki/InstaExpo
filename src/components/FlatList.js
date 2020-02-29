@@ -23,10 +23,10 @@ class FlatList extends React.Component {
   }
 
   onViewableItemsChanged = ({ viewableItems, changed }) => {
-    console.log(
-      'Visible items are',
-      viewableItems.map((item) => item.item.text)
-    );
+    // console.log(
+    //   'Visible items are',
+    //   viewableItems.map((item) => item.item.text)
+    // );
     // console.log(
     //   'Changed in this iteration',
     //   changed.map((item) => item.item.text)

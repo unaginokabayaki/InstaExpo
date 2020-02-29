@@ -13,6 +13,7 @@ import fonts from 'app/src/fonts';
 import images from 'app/src/images';
 
 import AppNavigator from 'app/src/navigation/AppNavigator';
+import firebase from 'app/src/firebase';
 
 class App extends React.Component {
   constructor(props) {
@@ -24,6 +25,8 @@ class App extends React.Component {
   }
 
   loadResourceAsync = async () => {
+    let uid = await firebase.init();
+    // console.log(uid);
     await Asset.loadAsync(Object.keys(images).map((key) => images[key]));
     await Font.loadAsync(fonts);
     return true;
