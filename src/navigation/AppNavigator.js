@@ -1,9 +1,5 @@
 import * as React from 'react';
-import {
-  NavigationContainer,
-  useRoute,
-  useNavigationState,
-} from '@react-navigation/native';
+import { NavigationContainer } from '@react-navigation/native';
 import {
   createStackNavigator,
   TransitionPresets,
@@ -16,6 +12,8 @@ import PostScreen from 'app/src/screens/PostScreen';
 
 import TakeScreen from 'app/src/screens/TakeScreen';
 import TakePublishScreen from 'app/src/screens/TakePublishScreen';
+
+import firebase from 'app/src/firebase';
 
 const RootStack = createStackNavigator();
 const MainStack = createStackNavigator();
@@ -42,6 +40,16 @@ export function MainStackNavigator() {
 }
 
 function AppNavigator() {
+  const [me, setMe] = React.useState({ uid: '', name: '', image: '' });
+
+  React.useEffect(() => {
+    (async () => {
+      const user = await firebase.getUser();
+      console.log(user);
+      setMe(user);
+    })();
+  }, []);
+
   return (
     <NavigationContainer
       onStateChange={(state) => {

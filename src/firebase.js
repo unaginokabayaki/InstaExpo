@@ -5,6 +5,7 @@ import Constants from 'expo-constants';
 import * as firebase from 'firebase';
 import 'firebase/firestore';
 
+// Firebaseのバージョンに注意
 class Firebase {
   constructor(config = {}) {
     firebase.initializeApp(config);
@@ -50,6 +51,27 @@ class Firebase {
         resolve(this.uid);
       })
     );
+
+  getUser = async (uid = null) => {
+    // uidがない場合、匿名ユーザのuidを使う
+    const userId = !uid ? this.uid : uid;
+
+    try {
+      const user = await this.user
+        .doc(userId)
+        .get()
+        .then((res) => res.data())
+        .catch((err) => console.log(err));
+
+      return {
+        uid: userId,
+        name: user.name,
+        image: user.img,
+      };
+    } catch ({ message }) {
+      return { error: message };
+    }
+  };
 }
 
 const fire = new Firebase(Constants.manifest.extra.firebase);
