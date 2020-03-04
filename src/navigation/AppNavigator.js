@@ -15,6 +15,9 @@ import TakePublishScreen from 'app/src/screens/TakePublishScreen';
 
 import firebase from 'app/src/firebase';
 
+import { connect } from 'react-redux';
+import { setMe } from 'app/src/actions/me';
+
 const RootStack = createStackNavigator();
 const MainStack = createStackNavigator();
 const TakeStack = createStackNavigator();
@@ -39,14 +42,13 @@ export function MainStackNavigator() {
   );
 }
 
-function AppNavigator() {
-  const [me, setMe] = React.useState({ uid: '', name: '', image: '' });
-
+function AppNavigator(props) {
+  // const [me, setMe] = React.useState({ uid: '', name: '', image: '' });
   React.useEffect(() => {
     (async () => {
       const user = await firebase.getUser();
       console.log(user);
-      setMe(user);
+      props.dispatchSetMe(user);
     })();
   }, []);
 
@@ -73,4 +75,17 @@ function AppNavigator() {
   );
 }
 
-export default AppNavigator;
+const mapStateToProps = (state) => {
+  return {
+    me: state.me,
+  };
+};
+
+const mapDispatchToProps = (dispatch) => {
+  return {
+    dispatchSetMe: (user) => dispatch(setMe(user)),
+  };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(AppNavigator);
+// export default AppNavigator;

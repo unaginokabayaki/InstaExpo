@@ -22,13 +22,13 @@ class UserScreen extends React.Component {
     super(props);
 
     // TODO: Firestoreから受け取る値と入れ替える
-    const me = {
-      uid: 1,
-      img: 'https://dummyimage.com/40x40/fff/000.png&text=User1',
-      name: 'User1',
-    };
+    // const me = {
+    //   uid: 1,
+    //   img: 'https://dummyimage.com/40x40/fff/000.png&text=User1',
+    //   name: 'User1',
+    // };
 
-    const { route } = this.props;
+    const { route, me } = this.props;
     const uid = route.params?.uid ?? me.uid;
     // console.log(route.params);
 
@@ -65,12 +65,12 @@ class UserScreen extends React.Component {
   async componentDidMount() {
     const { self } = this.state;
     // TODO: Firestoreから受け取る値と入れ替える
-    const me = {
-      uid: 1,
-      img: 'https://dummyimage.com/120x120/fff/000.png&text=User1',
-      name: 'User1',
-    };
-    const { navigation } = this.props;
+    // const me = {
+    //   uid: 1,
+    //   img: 'https://dummyimage.com/120x120/fff/000.png&text=User1',
+    //   name: 'User1',
+    // };
+    const { navigation, me } = this.props;
 
     if (self) {
       await this.setState({ user: me });
@@ -192,4 +192,10 @@ const styles = StyleSheet.create({
   },
 });
 
-export default UserScreen;
+const mapStateToProps = (state) => {
+  return {
+    me: state.me,
+  };
+};
+
+export default connect(mapStateToProps, null)(UserScreen);

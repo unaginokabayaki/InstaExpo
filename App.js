@@ -15,6 +15,12 @@ import images from 'app/src/images';
 import AppNavigator from 'app/src/navigation/AppNavigator';
 import firebase from 'app/src/firebase';
 
+import { Provider } from 'react-redux';
+import { createStore, combineReducers, applyMiddleware } from 'redux';
+import reducers from 'app/src/reducers';
+
+const store = createStore(combineReducers(reducers));
+
 class App extends React.Component {
   constructor(props) {
     super(props);
@@ -46,7 +52,11 @@ class App extends React.Component {
       );
     }
 
-    return <AppNavigator />;
+    return (
+      <Provider store={store}>
+        <AppNavigator />
+      </Provider>
+    );
   }
 }
 
