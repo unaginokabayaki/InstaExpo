@@ -48,7 +48,7 @@ function AppNavigator(props) {
     (async () => {
       const user = await firebase.getUser();
       console.log(user);
-      props.dispatchSetMe(user);
+      props.setMe(user);
     })();
   }, []);
 
@@ -81,10 +81,13 @@ const mapStateToProps = (state) => {
   };
 };
 
-const mapDispatchToProps = (dispatch) => {
-  return {
-    dispatchSetMe: (user) => dispatch(setMe(user)),
-  };
+// const mapDispatchToProps = (dispatch) => {
+//   return {
+//     dispatchSetMe: (user) => dispatch(setMe(user)),
+//   };
+// };
+const mapDispatchToProps = {
+  setMe,
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(AppNavigator);
