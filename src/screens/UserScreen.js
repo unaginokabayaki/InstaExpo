@@ -8,6 +8,8 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import Constants from 'expo-constants';
+import * as ImagePicker from 'expo-image-picker';
+import * as Permissions from 'expo-permissions';
 
 import { connect } from 'react-redux';
 import { Video } from 'expo-av';
@@ -16,6 +18,9 @@ import { Image } from 'react-native-expo-image-cache';
 import Avatar from 'app/src/components/Avatar';
 import FlatList from 'app/src/components/FlatList';
 import Text from 'app/src/components/Text';
+
+import firebase from 'app/src/firebase';
+import { setMe } from 'app/src/actions/me';
 
 class UserScreen extends React.Component {
   constructor(props) {
@@ -60,6 +65,7 @@ class UserScreen extends React.Component {
       fetching: false,
       loading: false,
     };
+    console.log(me.uid === uid ? 'myprofile' : uid);
   }
 
   async componentDidMount() {
@@ -73,9 +79,11 @@ class UserScreen extends React.Component {
     const { navigation, me } = this.props;
 
     if (self) {
+      // 自分のプロファイル
       await this.setState({ user: me });
       // navigation.setParams({ title: '自分' });
     } else {
+      // 自分以外のユーザ
       const user = {
         uid: null,
         name: 'username',
@@ -97,6 +105,28 @@ class UserScreen extends React.Component {
 
   onUserPress = async () => {
     // ここにユーザー画像変更の処理を書きます。
+    const { me, dispatch, setMe } = this.props;
+
+    const permissions = Permissions.CAMERA_ROLL;
+    const { status } = await Permissions.askAsync(permissions);
+
+    if (status) {
+      // カメラロールから画像を選択
+      const photo = await ImagePicker.launchImageLibraryAsync({
+        allowsEditing: true,
+        aspect: [1, 1],
+      });
+      console.log(photo);
+
+      if (!photo.cancelled) {
+        // firebaseのアップロード先を取得
+        const response = await firebase.changeUserImg(photo);
+        if (!response.error) {
+          console.log(response);
+          setMe({ ...me, img: response });
+        }
+      }
+    }
   };
 
   onThumbnailPress = (item) => {
@@ -198,4 +228,8 @@ const mapStateToProps = (state) => {
   };
 };
 
-export default connect(mapStateToProps, null)(UserScreen);
+const mapDispatchToProps = {
+  setMe,
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(UserScreen);

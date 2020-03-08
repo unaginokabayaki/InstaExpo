@@ -1,4 +1,4 @@
-import * as React from 'react';
+import * as Random from 'expo-random';
 import Constants from 'expo-constants';
 // import * as firebase from 'firebase';
 // import firebase from 'firebase';
@@ -66,10 +66,53 @@ class Firebase {
       return {
         uid: userId,
         name: user.name,
-        image: user.img,
+        img: user.img,
       };
     } catch ({ message }) {
       return { error: message };
+    }
+  };
+
+  uploadFileSync = async (uri) => {
+    const ext = uri.split('.').slice(-1)[0];
+    const randomBytes = await Random.getRandomBytesAsync(8);
+    const path = `file/${this.uid}/${randomBytes.join('-')}.${ext}`;
+    console.log(path);
+
+    return new Promise(async (resolve, reject) => {
+      const blob = await fetch(uri).then((response) => response.blob());
+
+      const ref = firebase.storage().ref(path);
+      const uploadTask = ref.put(blob);
+
+      const unsbscribe = uploadTask.on(
+        firebase.storage.TaskEvent.STATE_CHANGED,
+        (state) => {},
+        (err) => {
+          unsbscribe();
+          reject(err);
+        },
+        async () => {
+          unsbscribe();
+          const url = await ref.getDownloadURL();
+          resolve(url);
+        }
+      );
+    });
+  };
+
+  changeUserImg = async (file = '') => {
+    try {
+      const remoteUri = await this.uploadFileSync(file.uri);
+      console.log(remoteUri);
+
+      this.user.doc(`${this.uid}`).update({
+        img: remoteUri,
+      });
+
+      return remoteUri;
+    } catch (e) {
+      return { error: e.message };
     }
   };
 }

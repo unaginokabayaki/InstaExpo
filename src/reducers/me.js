@@ -9,7 +9,7 @@ export default (state = initState, action) => {
       return {
         uid: payload.uid,
         name: payload.name,
-        image: payload.image,
+        img: payload.img,
       };
     case ME_DELETE:
       return null;
