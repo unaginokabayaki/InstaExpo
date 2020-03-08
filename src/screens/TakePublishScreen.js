@@ -14,6 +14,8 @@ import { Video } from 'expo-av';
 import Constants from 'expo-constants';
 import { useNavigation } from '@react-navigation/native';
 
+import firebase from 'app/src/firebase';
+
 import IconButton from '../components/IconButton';
 
 class TakePublishScreen extends React.Component {
@@ -37,6 +39,7 @@ class TakePublishScreen extends React.Component {
       navigation.goBack();
     }
 
+    // ヘッダ右上の投稿ボタンを定義
     navigation.setParams({
       headerRight: <IconButton name="ios-send" onPress={this.onPublish} />,
     });
@@ -46,8 +49,32 @@ class TakePublishScreen extends React.Component {
     this.setState({ text });
   };
 
-  onPublish = async (item) => {
-    // ここに投稿の処理を書きます。
+  onPublish = async () => {
+    const { text, mode, photo, movie } = this.state;
+    const { navigation } = this.props;
+
+    Keyboard.dismiss();
+    navigation.setParams({
+      headerRight: <IconButton name="ios-refresh" />,
+    });
+
+    const result = await firebase.createPost(
+      text,
+      mode === 'photo' ? photo : movie,
+      mode
+    );
+
+    navigation.setParams({
+      headerRight: <IconButton name="ios-send" onPress={this.onPublish} />,
+    });
+
+    if (result.error) {
+      Alert.alert('TakePublish.alert', result.error);
+    } else {
+      // モーダルを閉じる
+      navigation.popToTop();
+      navigation.goBack();
+    }
   };
 
   render() {

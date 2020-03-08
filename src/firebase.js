@@ -12,8 +12,10 @@ class Firebase {
     // Timestapm型を扱えるようにする
     // firebase.firestore().settings({timestampsInSnapshots:true});
     const db = firebase.firestore();
-    // Userコレクションへの参照
+    // コレクションへの参照
     this.user = db.collection('user');
+    this.post = db.collection('post');
+    this.tag = db.collection('tag');
   }
 
   init = async () =>
@@ -77,24 +79,46 @@ class Firebase {
     const ext = uri.split('.').slice(-1)[0];
     const randomBytes = await Random.getRandomBytesAsync(8);
     const path = `file/${this.uid}/${randomBytes.join('-')}.${ext}`;
-    console.log(path);
+    console.log(`dest: ${path}`);
 
     return new Promise(async (resolve, reject) => {
       const blob = await fetch(uri).then((response) => response.blob());
 
-      const ref = firebase.storage().ref(path);
+      const ref = firebase
+        .storage()
+        .ref()
+        .child(path);
       const uploadTask = ref.put(blob);
 
       const unsbscribe = uploadTask.on(
         firebase.storage.TaskEvent.STATE_CHANGED,
-        (state) => {},
+        // next
+        (snapshot) => {
+          const progress =
+            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          console.log(`Upload is ${progress}% done`);
+          switch (snapshot.state) {
+            case firebase.storage.TaskState.PAUSED: // or 'paused'
+              console.log('Upload is paused');
+              break;
+            case firebase.storage.TaskState.RUNNING: // or 'running'
+              console.log('Upload is running');
+              break;
+            default:
+              break;
+          }
+        },
+        // error
         (err) => {
+          console.log(err);
           unsbscribe();
           reject(err);
         },
+        // complete
         async () => {
           unsbscribe();
-          const url = await ref.getDownloadURL();
+          const url = await uploadTask.snapshot.ref.getDownloadURL();
+          // const url = await ref.getDownloadURL();/
           resolve(url);
         }
       );
@@ -111,6 +135,52 @@ class Firebase {
       });
 
       return remoteUri;
+    } catch (e) {
+      return { error: e.message };
+    }
+  };
+
+  createPost = async (text = '', file = '', type = 'photo') => {
+    try {
+      const remoteUri = await this.uploadFileSync(file.uri);
+      // tagを検出
+      const tags = text.match(
+        // /#[一-龠_ぁ-ん_ァ-ヴーａ-ｚＡ-Ｚa-zA-Z0-9]+/gi
+        // /[#]{0,2}?(w*[一-龠_ぁ-ん_ァ-ヴーａ-ｚＡ-Ｚa-zA-Z0-9]+|[a-zA-Z0-9_]+|[a-zA-Z0-9_]w*)/gi
+        // /#(w*[一-龠_ぁ-ん_ァ-ヴーａ-ｚＡ-Ｚa-zA-Z0-9]+|[a-zA-Z0-9_]+|[a-zA-Z0-9_]w*)/gi
+        /#[一-龠_ぁ-ん_ァ-ヴーａ-ｚＡ-Ｚa-zA-Z0-9]+/gi
+      );
+
+      await this.post.add({
+        text,
+        type,
+        fileWidth: type === 'photo' ? file.width : null,
+        fileHeight: type === 'photo' ? file.height : null,
+        fileUri: remoteUri,
+        user: this.user.doc(`${this.uid}`),
+        tag: tags
+          ? tags.reduce((acc, cur) => {
+              // #を除外したtagをkeyにdateをセット
+              acc[cur.replace(/#/, '')] = Date.now();
+              return acc;
+            }, {})
+          : null,
+        timestamp: Date.now(),
+      });
+
+      if (tags) {
+        await Promise.all(
+          tags.map((tag) => {
+            // #を除外
+            const t = tag.replace(/^#/, '');
+            return this.tag.doc(t).set({
+              name: t,
+            });
+          })
+        );
+      }
+
+      return true;
     } catch (e) {
       return { error: e.message };
     }
