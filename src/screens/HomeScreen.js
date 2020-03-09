@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {
   ScrollView,
-  SafeAreaView,
+  RefreshControl,
   View,
   Text,
   ActivityIndicator,
@@ -13,6 +13,8 @@ import * as WebBrowser from 'expo-web-browser';
 import FlatList from 'app/src/components/FlatList';
 import Item from 'app/src/components/Item';
 
+import firebase from 'app/src/firebase';
+
 class HomeScreen extends React.Component {
   // navigationOptions = () => ({
   //   headerTitle: 'フィード',
@@ -20,42 +22,84 @@ class HomeScreen extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      posts: [
-        {
-          pid: 1,
-          text: '1つ目の投稿です。 #tag1',
-          fileUri: 'https://dummyimage.com/400x400/000/fff.png&text=Post1',
-          user: {
-            uid: 1,
-            img: 'https://dummyimage.com/40x40/fff/000.png&text=User1',
-            name: 'User1',
-          },
-        },
-        {
-          pid: 2,
-          text: '2つ目の投稿です。 #tag2',
-          fileUri: 'https://dummyimage.com/400x400/000/fff.png&text=Post2',
-          user: {
-            uid: 1,
-            img: 'https://dummyimage.com/40x40/fff/000.png&text=User2',
-            name: 'User1',
-          },
-        },
-        {
-          pid: 3,
-          text: '3つ目の投稿です。 #tag3',
-          fileUri: 'https://dummyimage.com/400x400/000/fff.png&text=Post3',
-          user: {
-            uid: 1,
-            img: 'https://dummyimage.com/40x40/fff/000.png&text=User3',
-            name: 'User1',
-          },
-        },
-      ],
+      posts: [],
+      // posts: [
+      //   {
+      //     pid: 1,
+      //     text: '1つ目の投稿です。 #tag1',
+      //     fileUri: 'https://dummyimage.com/400x400/000/fff.png&text=Post1',
+      //     user: {
+      //       uid: 1,
+      //       img: 'https://dummyimage.com/40x40/fff/000.png&text=User1',
+      //       name: 'User1',
+      //     },
+      //   },
+      //   {
+      //     pid: 2,
+      //     text: '2つ目の投稿です。 #tag2',
+      //     fileUri: 'https://dummyimage.com/400x400/000/fff.png&text=Post2',
+      //     user: {
+      //       uid: 1,
+      //       img: 'https://dummyimage.com/40x40/fff/000.png&text=User2',
+      //       name: 'User1',
+      //     },
+      //   },
+      //   {
+      //     pid: 3,
+      //     text: '3つ目の投稿です。 #tag3',
+      //     fileUri: 'https://dummyimage.com/400x400/000/fff.png&text=Post3',
+      //     user: {
+      //       uid: 1,
+      //       img: 'https://dummyimage.com/40x40/fff/000.png&text=User3',
+      //       name: 'User1',
+      //     },
+      //   },
+      // ],
       fetching: false,
       loading: false,
     };
   }
+
+  async componentDidMount() {
+    await this.getPosts();
+  }
+
+  getPosts = async (cursor = null) => {
+    console.log('getPosts');
+    this.setState({ fetching: true });
+
+    const response = await firebase.getPosts(cursor);
+
+    if (!response.error) {
+      const { posts } = this.state;
+
+      // dataにはデータが、cursorには最後尾が入ってくる
+      // カーソルで続きを読んだ場合は結合する
+      this.setState({
+        posts: cursor ? posts.concat(response.data) : response.data,
+        cursor: response.cursor,
+      });
+    }
+
+    this.setState({ fetching: false });
+  };
+
+  // リストを最初から再取得
+  onRefresh = async () => {};
+
+  // リストの最後に来たら続きを読み込む
+  onEndReached = async () => {
+    console.log('onEndReached');
+    const { cursor, loading } = this.state;
+    console.log(loading);
+    console.log(cursor);
+
+    if (!loading && cursor) {
+      this.setState({ loading: true });
+      await this.getPosts(cursor);
+      this.setState({ loading: false });
+    }
+  };
 
   onUserPress = (item) => {
     // ここにUserScreenに遷移する処理を書きます。
@@ -86,10 +130,11 @@ class HomeScreen extends React.Component {
   render() {
     const { posts, fetching, loading } = this.state;
 
-    if (posts.length === 0) {
+    if (!fetching && posts.length === 0) {
       return (
         <ScrollView
-          style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
+          style={styles.container}
+          contentContainerStyle={[styles.container, styles.empty]}
         >
           <Text>投稿はありません</Text>
         </ScrollView>
@@ -101,6 +146,11 @@ class HomeScreen extends React.Component {
         <FlatList
           data={posts}
           keyExtractor={(item) => item.pid.toString()}
+          refreshControl={
+            <RefreshControl refreshing={fetching} onRefresh={this.onRefresh} />
+          }
+          onEndReachedThreshold={0.1}
+          onEndReached={this.onEndReached}
           renderItem={({ item, index, separators }) => {
             // console.log(index);
             return (

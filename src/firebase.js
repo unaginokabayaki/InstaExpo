@@ -185,6 +185,79 @@ class Firebase {
       return { error: e.message };
     }
   };
+
+  getPost = async (pid = '0') => {
+    try {
+      const post = await this.post.doc(pid).get();
+      const user = await post.user.get().then((res) => res.data());
+
+      user.uid = post.user.id;
+      delete post.user;
+
+      // const liked = await this.user;
+
+      return {
+        pid,
+        ...post,
+        // liked,
+        user,
+      };
+    } catch (e) {
+      return { error: e.message };
+    }
+  };
+
+  getPosts = async (cursor = null, num = 5) => {
+    try {
+      let ref = await this.post.orderBy('timestamp', 'desc').limit(num);
+
+      // カーソルがある場合は次のデータから始める
+      if (cursor) {
+        ref = ref.startAfter(cursor);
+      }
+
+      const snapshots = await ref.get();
+      const data = [];
+
+      // 全部データ読むまで待つ
+      await Promise.all(
+        snapshots.docs.map(async (doc) => {
+          if (doc.exists) {
+            const post = doc.data() || {};
+            const user = await post.user.get().then((res) => res.data());
+            // console.log(post.user.id);
+            // console.log(user);
+
+            user.uid = post.user.id;
+            delete post.user;
+
+            console.log(post);
+            console.log(user);
+            // const liked = await this.user;
+
+            data.push({
+              // key: doc.id,
+              pid: doc.id,
+              ...post,
+              // liked,
+              user,
+            });
+          }
+        })
+      );
+
+      // 最後のデータを保存して後で使う
+      const lastVisible =
+        snapshots.docs.length > 0
+          ? snapshots.docs[snapshots.docs.length - 1]
+          : null;
+
+      // データと最後尾を返す
+      return { data, cursor: lastVisible };
+    } catch (e) {
+      return { error: e.message };
+    }
+  };
 }
 
 const fire = new Firebase(Constants.manifest.extra.firebase);
