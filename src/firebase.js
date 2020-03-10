@@ -71,6 +71,7 @@ class Firebase {
         img: user.img,
       };
     } catch ({ message }) {
+      console.error(message);
       return { error: message };
     }
   };
@@ -136,6 +137,7 @@ class Firebase {
 
       return remoteUri;
     } catch (e) {
+      console.error(e.message);
       return { error: e.message };
     }
   };
@@ -182,6 +184,7 @@ class Firebase {
 
       return true;
     } catch (e) {
+      console.error(e.message);
       return { error: e.message };
     }
   };
@@ -203,6 +206,7 @@ class Firebase {
         user,
       };
     } catch (e) {
+      console.error(e.message);
       return { error: e.message };
     }
   };
@@ -253,6 +257,7 @@ class Firebase {
       // データと最後尾を返す
       return { data, cursor: lastVisible };
     } catch (e) {
+      console.error(e.message);
       return { error: e.message };
     }
   };
@@ -262,26 +267,27 @@ class Firebase {
     cursor = null,
     num = 6
   ) => {
-    let ref;
-
-    if (uid) {
-      // 自分が投稿したデータを取得
-      ref = this.post
-        .where('user', '==', this.user.doc(uid))
-        .orderBy('timestamp', 'desc')
-        .limit(num);
-    } else if (tag) {
-      // tag.xxx を持っているデータを取得
-      const tagname = `tag.${tag.replace(/#/, '')}`;
-      ref = this.post
-        .where(tagname, '>', 0)
-        .orderBy(tagname, 'desc')
-        .limit(num);
-    } else {
-      return { data: null, cursor: null };
-    }
+    console.log({ uid, tag });
 
     try {
+      let ref;
+      if (uid) {
+        // 自分が投稿したデータを取得
+        ref = this.post
+          .where('user', '==', this.user.doc(uid))
+          .orderBy('timestamp', 'desc')
+          .limit(num);
+      } else if (tag) {
+        // tag.xxx を持っているデータを取得
+        const tagname = `tag.${tag.replace(/#/, '')}`;
+        ref = this.post
+          .where(tagname, '>', 0)
+          .orderBy(tagname, 'desc')
+          .limit(num);
+      } else {
+        return { data: null, cursor: null };
+      }
+
       if (cursor) {
         ref = ref.startAfter(cursor);
       }
@@ -309,6 +315,7 @@ class Firebase {
 
       return { data, cursor: lastVisible };
     } catch (e) {
+      console.error(e.message);
       return { error: e.message };
     }
   };

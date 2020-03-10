@@ -39,28 +39,30 @@ class UserScreen extends React.Component {
 
     this.state = {
       self: me.uid === uid,
-      user: {
-        uid: 1,
-        img: 'https://dummyimage.com/120x120/ccc/000.png&text=User1',
-        name: 'User1',
-      },
-      posts: [
-        {
-          pid: 1,
-          type: 'photo',
-          thumbnail: 'https://dummyimage.com/400x400/ffd/000.png&text=Post1',
-        },
-        {
-          pid: 2,
-          type: 'photo',
-          thumbnail: 'https://dummyimage.com/400x400/fdf/000.png&text=Post2',
-        },
-        {
-          pid: 3,
-          type: 'photo',
-          thumbnail: 'https://dummyimage.com/400x400/dff/000.png&text=Post3',
-        },
-      ],
+      user: { uid: null, name: 'unknown', img: null },
+      // user: {
+      //   uid: 1,
+      //   img: 'https://dummyimage.com/120x120/ccc/000.png&text=User1',
+      //   name: 'User1',
+      // },
+      posts: [],
+      // posts: [
+      //   {
+      //     pid: 1,
+      //     type: 'photo',
+      //     thumbnail: 'https://dummyimage.com/400x400/ffd/000.png&text=Post1',
+      //   },
+      //   {
+      //     pid: 2,
+      //     type: 'photo',
+      //     thumbnail: 'https://dummyimage.com/400x400/fdf/000.png&text=Post2',
+      //   },
+      //   {
+      //     pid: 3,
+      //     type: 'photo',
+      //     thumbnail: 'https://dummyimage.com/400x400/dff/000.png&text=Post3',
+      //   },
+      // ],
       cursor: null,
       fetching: false,
       loading: false,
@@ -70,12 +72,6 @@ class UserScreen extends React.Component {
 
   async componentDidMount() {
     const { self } = this.state;
-    // TODO: Firestoreから受け取る値と入れ替える
-    // const me = {
-    //   uid: 1,
-    //   img: 'https://dummyimage.com/120x120/fff/000.png&text=User1',
-    //   name: 'User1',
-    // };
     const { navigation, me } = this.props;
 
     if (self) {
@@ -92,12 +88,16 @@ class UserScreen extends React.Component {
       await this.setState({ user });
       // navigation.setParams({ title: user.name });
     }
+
+    // 自分の投稿
+    await this.getUserPosts();
   }
 
   componentDidUpdate(prevProps) {
     const { self } = this.state;
     const { me } = this.props;
 
+    // 前回の表示が自分以外だったら自分にセット
     if (prevProps.me !== me && self) {
       this.setState({ user: me });
     }
@@ -134,6 +134,38 @@ class UserScreen extends React.Component {
     navigation.push('Post', { pid: item.pid });
   };
 
+  getUserPosts = async (cursor = null) => {
+    const { user, posts } = this.state;
+
+    this.setState({ fetching: true });
+
+    const response = await firebase.getThumbnails({ uid: user.uid }, cursor);
+
+    if (!response.error) {
+      this.setState({
+        posts: cursor ? posts.concat(response.data) : response.data,
+        cursor: response.cursor,
+      });
+    }
+
+    this.setState({ fetching: false });
+  };
+
+  onRefresh = async () => {
+    this.setState({ cursor: null });
+    await this.getUserPosts();
+  };
+
+  onEndReached = async () => {
+    const { cursor, loading } = this.state;
+
+    if (!loading && cursor) {
+      this.setState({ loading: true });
+      await this.getUserPosts(cursor);
+      this.setState({ loading: false });
+    }
+  };
+
   render() {
     const { self, user, posts, fetching, loading } = this.state;
 
@@ -144,6 +176,11 @@ class UserScreen extends React.Component {
           numColumns={3}
           data={posts}
           keyExtractor={(item) => item.pid.toString()}
+          refreshControl={
+            <RefreshControl refreshing={fetching} onRefresh={this.onRefresh} />
+          }
+          onEndReachedThreshold={0.1}
+          onEndReached={this.onEndReached}
           ListHeaderComponent={() => (
             <View style={styles.header}>
               {!self && (

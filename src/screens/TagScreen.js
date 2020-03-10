@@ -63,6 +63,8 @@ class TagScreen extends React.Component {
         posts: cursor ? posts.concat(response.data) : response.data,
         cursor: response.cursor,
       });
+    } else {
+      alert(response.error);
     }
 
     this.setState({ fetching: false });
@@ -101,7 +103,7 @@ class TagScreen extends React.Component {
           refreshControl={
             <RefreshControl refreshing={fetching} onRefresh={this.onRefresh} />
           }
-          nEndReachedThreshold={0.1}
+          onEndReachedThreshold={0.1}
           onEndReached={this.onEndReached}
           ListHeaderComponent={() => (
             <View style={styles.header}>
