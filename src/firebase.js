@@ -231,8 +231,8 @@ class Firebase {
             user.uid = post.user.id;
             delete post.user;
 
-            console.log(post);
-            console.log(user);
+            // console.log(post);
+            // console.log(user);
             // const liked = await this.user;
 
             data.push({
@@ -247,12 +247,66 @@ class Firebase {
       );
 
       // 最後のデータを保存して後で使う
-      const lastVisible =
-        snapshots.docs.length > 0
-          ? snapshots.docs[snapshots.docs.length - 1]
-          : null;
+      const datalen = snapshots.docs.length;
+      const lastVisible = datalen > 0 ? snapshots.docs[datalen - 1] : null;
 
       // データと最後尾を返す
+      return { data, cursor: lastVisible };
+    } catch (e) {
+      return { error: e.message };
+    }
+  };
+
+  getThumbnails = async (
+    { uid = null, tag = null },
+    cursor = null,
+    num = 6
+  ) => {
+    let ref;
+
+    if (uid) {
+      // 自分が投稿したデータを取得
+      ref = this.post
+        .where('user', '==', this.user.doc(uid))
+        .orderBy('timestamp', 'desc')
+        .limit(num);
+    } else if (tag) {
+      // tag.xxx を持っているデータを取得
+      const tagname = `tag.${tag.replace(/#/, '')}`;
+      ref = this.post
+        .where(tagname, '>', 0)
+        .orderBy(tagname, 'desc')
+        .limit(num);
+    } else {
+      return { data: null, cursor: null };
+    }
+
+    try {
+      if (cursor) {
+        ref = ref.startAfter(cursor);
+      }
+
+      const snapshots = await ref.get();
+      const data = [];
+
+      await Promise.all(
+        snapshots.docs.map(async (doc) => {
+          if (doc.exists) {
+            const post = doc.data() || {};
+
+            data.push({
+              // key: doc.id,
+              pid: doc.id,
+              thumbnail: post.fileUri,
+              type: post.type,
+            });
+          }
+        })
+      );
+
+      const datalen = snapshots.docs.length;
+      const lastVisible = datalen > 0 ? snapshots.docs[datalen - 1] : null;
+
       return { data, cursor: lastVisible };
     } catch (e) {
       return { error: e.message };

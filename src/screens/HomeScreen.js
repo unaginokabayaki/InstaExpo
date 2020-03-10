@@ -6,12 +6,16 @@ import {
   Text,
   ActivityIndicator,
   StyleSheet,
+  Share,
 } from 'react-native';
 import Constants from 'expo-constants';
 import * as WebBrowser from 'expo-web-browser';
 
 import FlatList from 'app/src/components/FlatList';
 import Item from 'app/src/components/Item';
+
+import { connect } from 'react-redux';
+import { doRefresh } from 'app/src/actions/refresh';
 
 import firebase from 'app/src/firebase';
 
@@ -55,14 +59,53 @@ class HomeScreen extends React.Component {
       //     },
       //   },
       // ],
+      cursor: null,
       fetching: false,
       loading: false,
     };
   }
 
   async componentDidMount() {
+    const { navigation, route } = this.props;
+
     await this.getPosts();
+
+    // タブ切り替え時にフォーカスを取得した際に発動
+    navigation.addListener('focus', async () => {
+      this.reloadList();
+    });
   }
+
+  // componentWillUnmount() {}
+
+  async componentDidUpdate(prevProps) {
+    const { navigation, route, refreshHome } = this.props;
+    console.log(`componentdidupdate ${refreshHome}`);
+    // console.log(prevProps.route.name);
+    // console.log(prevProps.navigation.isFocused());
+    // console.log(navigation.isFocused());
+
+    // if (
+    //   !prevProps.navigation.isFocused &&
+    //   navigation.isFocused &&
+    //   prevProps.route.name === 'Pub'
+    // ) {
+    //   console.log('update home screen');
+    //   // await this.getPosts();
+    // }
+  }
+
+  reloadList = async () => {
+    const { refreshHome } = this.props;
+    console.log(`focus: ${refreshHome}`);
+
+    // リフレッシュフラグがある場合再ロード
+    // フラグはTakePublishScreenでセットして、ここで戻す
+    if (refreshHome) {
+      await this.getPosts();
+      doRefresh(false);
+    }
+  };
 
   getPosts = async (cursor = null) => {
     console.log('getPosts');
@@ -85,14 +128,17 @@ class HomeScreen extends React.Component {
   };
 
   // リストを最初から再取得
-  onRefresh = async () => {};
+  onRefresh = async () => {
+    this.setState({ cursor: null });
+    await this.getPosts();
+  };
 
   // リストの最後に来たら続きを読み込む
   onEndReached = async () => {
     console.log('onEndReached');
     const { cursor, loading } = this.state;
-    console.log(loading);
-    console.log(cursor);
+    // console.log(loading);
+    // console.log(cursor);
 
     if (!loading && cursor) {
       this.setState({ loading: true });
@@ -102,11 +148,14 @@ class HomeScreen extends React.Component {
   };
 
   onUserPress = (item) => {
-    // ここにUserScreenに遷移する処理を書きます。
+    const { navigation } = this.props;
+    navigation.push('User', { uid: item.user.uid });
   };
 
   onMorePress = (item) => {
-    // ここに投稿の共有をする処理を書きます。
+    Share.share({
+      message: item.fileUri,
+    });
   };
 
   onLikePress = (item) => {
@@ -149,7 +198,7 @@ class HomeScreen extends React.Component {
           refreshControl={
             <RefreshControl refreshing={fetching} onRefresh={this.onRefresh} />
           }
-          onEndReachedThreshold={0.1}
+          onEndReachedThreshold={0.5}
           onEndReached={this.onEndReached}
           renderItem={({ item, index, separators }) => {
             // console.log(index);
@@ -196,4 +245,14 @@ const styles = StyleSheet.create({
   },
 });
 
-export default HomeScreen;
+const mapStateToProps = (state) => {
+  return {
+    refreshHome: state.refresh.refreshHome,
+  };
+};
+
+const mapDispatchToProps = {
+  doRefresh,
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(HomeScreen);

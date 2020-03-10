@@ -14,6 +14,9 @@ import { Video } from 'expo-av';
 import Constants from 'expo-constants';
 import { useNavigation } from '@react-navigation/native';
 
+import { connect } from 'react-redux';
+import { doRefresh } from 'app/src/actions/refresh';
+
 import firebase from 'app/src/firebase';
 
 import IconButton from '../components/IconButton';
@@ -51,7 +54,7 @@ class TakePublishScreen extends React.Component {
 
   onPublish = async () => {
     const { text, mode, photo, movie } = this.state;
-    const { navigation } = this.props;
+    const { navigation, doRefresh } = this.props;
 
     Keyboard.dismiss();
     navigation.setParams({
@@ -71,9 +74,11 @@ class TakePublishScreen extends React.Component {
     if (result.error) {
       Alert.alert('TakePublish.alert', result.error);
     } else {
+      doRefresh(true);
       // モーダルを閉じる
       navigation.popToTop();
       navigation.goBack();
+      // navigation.navigate('MainStack');
     }
   };
 
@@ -148,4 +153,14 @@ const styles = StyleSheet.create({
   },
 });
 
-export default TakePublishScreen;
+const mapStateToProps = (state) => {
+  return {
+    refreshHome: state.refresh.refreshHome,
+  };
+};
+
+const mapDispatchToProps = {
+  doRefresh,
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(TakePublishScreen);

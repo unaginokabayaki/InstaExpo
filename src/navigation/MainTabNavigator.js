@@ -42,6 +42,14 @@ function OpenTakeStack({ navigation }) {
 class MainTabNavigator extends React.Component {
   // function MainTabNavigator({ navigation, route }) {
 
+  componentDidMount() {
+    console.log('mounted main tab navigator');
+  }
+
+  componentDidUpdate() {
+    console.log('updated main tab navigator');
+  }
+
   render() {
     const { navigation, route } = this.props;
     const routeName = route.state

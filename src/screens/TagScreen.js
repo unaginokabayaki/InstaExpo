@@ -14,6 +14,8 @@ import { Image } from 'react-native-expo-image-cache';
 import FlatList from 'app/src/components/FlatList';
 import Text from 'app/src/components/Text';
 
+import firebase from 'app/src/firebase';
+
 class TagScreen extends React.Component {
   constructor(props) {
     super(props);
@@ -23,26 +25,63 @@ class TagScreen extends React.Component {
 
     this.state = {
       tag,
+      posts: [],
       // TODO: Firestoreから受け取る値と入れ替える
-      posts: [
-        {
-          pid: 1,
-          type: 'photo',
-          text: 'tagの投稿です。',
-          fileUri: 'https://dummyimage.com/400x400/000/fff.png&text=Post1',
-          thumbnail: 'https://dummyimage.com/400x400/000/fff.png&text=Post1',
-          user: {
-            uid: 1,
-            img: 'https://dummyimage.com/40x40/fff/000.png&text=User1',
-            name: 'User1',
-          },
-        },
-      ],
+      // posts: [
+      //   {
+      //     pid: 1,
+      //     type: 'photo',
+      //     text: 'tagの投稿です。',
+      //     fileUri: 'https://dummyimage.com/400x400/000/fff.png&text=Post1',
+      //     thumbnail: 'https://dummyimage.com/400x400/000/fff.png&text=Post1',
+      //     user: {
+      //       uid: 1,
+      //       img: 'https://dummyimage.com/40x40/fff/000.png&text=User1',
+      //       name: 'User1',
+      //     },
+      //   },
+      // ],
       cursor: null,
       fetching: false,
       loading: false,
     };
   }
+
+  async componentDidMount() {
+    await this.getTagPosts();
+  }
+
+  getTagPosts = async (cursor = null) => {
+    const { tag, posts } = this.state;
+
+    this.setState({ fetching: true });
+
+    const response = await firebase.getThumbnails({ tag }, cursor);
+
+    if (!response.error) {
+      this.setState({
+        posts: cursor ? posts.concat(response.data) : response.data,
+        cursor: response.cursor,
+      });
+    }
+
+    this.setState({ fetching: false });
+  };
+
+  onRefresh = async () => {
+    this.setState({ cursor: null });
+    await this.getTagPosts();
+  };
+
+  onEndReached = async () => {
+    const { cursor, loading } = this.state;
+
+    if (!loading && cursor) {
+      this.setState({ loading: true });
+      await this.getTagPosts(cursor);
+      this.setState({ loading: false });
+    }
+  };
 
   onThumbnailPress = (item) => {
     const { navigation } = this.props;
@@ -59,6 +98,11 @@ class TagScreen extends React.Component {
           numColumns={3}
           data={posts}
           keyExtractor={(item) => item.pid.toString()}
+          refreshControl={
+            <RefreshControl refreshing={fetching} onRefresh={this.onRefresh} />
+          }
+          nEndReachedThreshold={0.1}
+          onEndReached={this.onEndReached}
           ListHeaderComponent={() => (
             <View style={styles.header}>
               <Text font="noto-sans-medium" style={styles.name}>

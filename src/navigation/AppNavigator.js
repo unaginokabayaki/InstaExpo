@@ -50,11 +50,16 @@ function AppNavigator(props) {
       console.log(user);
       props.setMe(user);
     })();
+
+    // (async () => {
+    //   console.log('app navigator updated');
+    // })();
   }, []);
 
   return (
     <NavigationContainer
       onStateChange={(state) => {
+        console.log('app navigator updated');
         // console.log('state is ' + state);
       }}
     >
