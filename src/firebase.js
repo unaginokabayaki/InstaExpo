@@ -319,6 +319,26 @@ class Firebase {
       return { error: e.message };
     }
   };
+
+  getTags = async (keyword = null) => {
+    const strlength = keyword.length;
+    const strFrontCode = keyword.slice(0, strlength - 1);
+    const strEndCode = keyword.slice(strlength - 1, strlength);
+
+    // 文字列の前方一致検索のため、最後の文字列は次の文字コードまでを範囲にする
+    // aaaaa < aaab の検索で aaaaaの前方一致検索ができる
+    const startCode = keyword;
+    const endCode =
+      strFrontCode + String.fromCharCode(strEndCode.charCodeAt(0) + 1);
+    console.log(`${startCode} ~ ${endCode}`);
+
+    const shapshot = await this.tag
+      .where('name', '>=', startCode)
+      .where('name', '<', endCode)
+      .get();
+
+    return shapshot.docs.map((doc) => ({ name: doc.id, key: doc.id }));
+  };
 }
 
 const fire = new Firebase(Constants.manifest.extra.firebase);

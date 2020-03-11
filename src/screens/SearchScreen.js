@@ -14,6 +14,8 @@ import FlatList from 'app/src/components/FlatList';
 import Text from 'app/src/components/Text';
 import { render } from 'react-dom';
 
+import firebase from 'app/src/firebase';
+
 class SearchScreen extends React.Component {
   // static navigationOptions = {
   //   header: null,
@@ -24,17 +26,34 @@ class SearchScreen extends React.Component {
 
     this.state = {
       keyword: null,
-      tags: [{ name: 'aaa' }, { name: 'bbb' }, { name: 'ccc' }],
+      tags: [],
+      // tags: [{ name: 'aaa' }, { name: 'bbb' }, { name: 'ccc' }],
       searching: false,
     };
   }
 
+  getTags = async () => {
+    const { keyword } = this.state;
+
+    const response = await firebase.getTags(keyword.replace(/^#/, ''));
+
+    if (!response.error) {
+      this.setState({ tags: response });
+    }
+  };
+
   onChangeText = (text) => {
-    // ここに検索文字列が変化した際の処理を書きます。
+    clearTimeout(this.interval);
+    this.setState({ keyword: text.replace(/^#/, ''), searching: true });
+    this.interval = setTimeout(async () => {
+      this.setState({ searching: false });
+      await this.getTags();
+    }, 1500);
   };
 
   onRowPress = (item) => {
-    // ここにTagScreenを開く処理を記述します。
+    const { navigation } = this.props;
+    navigation.push('Tag', { tag: `${item.name}` });
   };
 
   render() {
@@ -42,22 +61,20 @@ class SearchScreen extends React.Component {
 
     return (
       <SafeAreaView>
+        <View style={styles.header}>
+          <TextInput
+            style={styles.search}
+            value={keyword}
+            placeholder="タグを入力して検索しましょう"
+            underlineColorAndroid="transparent"
+            onChangeText={this.onChangeText}
+            clearButtonMode="while-editing"
+          />
+        </View>
         <View>
           <FlatList
             data={tags}
             keyExtractor={(item) => item.name}
-            ListHeaderComponent={() => (
-              <View style={styles.header}>
-                <TextInput
-                  style={styles.search}
-                  value={keyword}
-                  placeholder="タグを入力して検索しましょう"
-                  underlineColorAndroid="transparent"
-                  onChangeText={this.onChangeText}
-                  clearButtonMode="while-editing"
-                />
-              </View>
-            )}
             renderItem={({ item }) => {
               if (searching) {
                 return null;
