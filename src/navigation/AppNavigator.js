@@ -59,7 +59,7 @@ function AppNavigator(props) {
   return (
     <NavigationContainer
       onStateChange={(state) => {
-        console.log('app navigator updated');
+        // console.log('app navigator updated');
         // console.log('state is ' + state);
       }}
     >

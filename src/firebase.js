@@ -16,6 +16,7 @@ class Firebase {
     this.user = db.collection('user');
     this.post = db.collection('post');
     this.tag = db.collection('tag');
+    this.notification = db.collection('notification');
   }
 
   init = async () =>
@@ -197,12 +198,17 @@ class Firebase {
       user.uid = post.user.id;
       delete post.user;
 
-      // const liked = await this.user;
+      const liked = await this.user
+        .doc(`${this.uid}`)
+        .collection('liked')
+        .doc(`${pid}`)
+        .get()
+        .then((userlikeddoc) => userlikeddoc.exists);
 
       return {
         pid,
         ...post,
-        // liked,
+        liked,
         user,
       };
     } catch (e) {
@@ -237,13 +243,18 @@ class Firebase {
 
             // console.log(post);
             // console.log(user);
-            // const liked = await this.user;
+            const liked = await this.user
+              .doc(`${this.uid}`)
+              .collection('liked')
+              .doc(`${doc.id}`)
+              .get()
+              .then((userlikeddoc) => userlikeddoc.exists);
 
             data.push({
               // key: doc.id,
               pid: doc.id,
               ...post,
-              // liked,
+              liked,
               user,
             });
           }
@@ -338,6 +349,62 @@ class Firebase {
       .get();
 
     return shapshot.docs.map((doc) => ({ name: doc.id, key: doc.id }));
+  };
+
+  // userのcollectionにいいねしたpostを保存する
+  likePost = async (item = {}) => {
+    try {
+      let liked = true;
+      await this.user
+        .doc(`${this.uid}`)
+        .collection('liked')
+        .doc(`${item.pid}`)
+        .get()
+        .then(async (doc) => {
+          if (!doc.exists) {
+            this.user
+              .doc(`${this.uid}`)
+              .collection('liked')
+              .doc(`${item.pid}`)
+              .set({ timestamp: Date.now() });
+
+            this.notification.add({
+              type: 'like',
+              uid: doc.id,
+              post: this.post.doc(`${item.pid}`),
+              from: this.user.doc(`${item.uid}`),
+              timestamp: Date.now(),
+            });
+
+            liked = true;
+          } else {
+            this.user
+              .doc(`${this.uid}`)
+              .collection('liked')
+              .doc(`${item.pid}`)
+              .delete();
+
+            const snapshot = await this.notification
+              .where('type', '==', 'like')
+              .where('post', '==', this.post.doc(`${item.pid}`))
+              .where('from', '==', this.user.doc(`${item.uid}`))
+              .get();
+
+            await Promise.all(
+              snapshot.docs.map(async (d) => {
+                await d.ref.delete();
+              })
+            );
+
+            liked = false;
+          }
+        });
+
+      return liked;
+    } catch (e) {
+      console.error(e.message);
+      return { error: e.message };
+    }
   };
 }
 

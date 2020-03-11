@@ -158,8 +158,18 @@ class HomeScreen extends React.Component {
     });
   };
 
-  onLikePress = (item) => {
-    // ここにいいねの処理を書きます。
+  onLikePress = async (item) => {
+    const { posts } = this.state;
+    const response = await firebase.likePost(item);
+    if (!response.error) {
+      // pidが一致する投稿（クリックしたもの）のlikedを更新してマージ
+      this.setState({
+        posts: posts.map((post) => ({
+          ...post,
+          liked: post.pid === item.pid ? response : post.liked,
+        })),
+      });
+    }
   };
 
   onLinkPress = (url, txt) => {
