@@ -6,14 +6,36 @@ import Constants from 'expo-constants';
 import Item from 'app/src/components/Item';
 import Text from 'app/src/components/Text';
 
+import firebase from 'app/src/firebase';
+
 class PostScreen extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
+      liked: false,
       error: false,
       fetching: false,
     };
+  }
+
+  async componentDidMount() {
+    const { route } = this.props;
+
+    this.setState({ fetching: true });
+
+    const pid = route.params?.pid ?? null;
+    const response = await firebase.getPost(pid);
+
+    if (!response.error) {
+      this.setState({ ...response });
+      // navigation.setParam({ title: '投稿' });
+    } else {
+      this.setState({ error: true });
+      // navigation.setParams({ title: '投稿が見つかりません。' });
+    }
+
+    this.setState({ fetching: false });
   }
 
   onUserPress = (item) => {
@@ -28,21 +50,26 @@ class PostScreen extends React.Component {
   };
 
   onLikePress = async (item) => {
-    // ここにいいねの処理を書きます。
+    const response = await firebase.likePost(item);
+    if (!response.error) {
+      this.setState({
+        liked: response,
+      });
+    }
   };
 
-  // onLinkPress = (url, txt) => {
-  //   const { navigation } = this.props;
+  onLinkPress = (url, txt) => {
+    const { navigation } = this.props;
 
-  //   switch (txt[0]) {
-  //     case '#':
-  //       navigation.push('Tag', { tag: txt });
-  //       break;
-  //     default:
-  //       WebBrowser.openBrowserAsync(url);
-  //       break;
-  //   }
-  // }
+    switch (txt[0]) {
+      case '#':
+        navigation.push('Tag', { tag: txt });
+        break;
+      default:
+        WebBrowser.openBrowserAsync(url);
+        break;
+    }
+  };
 
   render() {
     const { error, fetching } = this.state;
@@ -65,14 +92,14 @@ class PostScreen extends React.Component {
       >
         <Item
           // TODO: Firestoreから受け取る値と入れ替える
-          // {...this.state}
-          text="投稿です。"
-          fileUri="https://dummyimage.com/400x400/000/fff.png&text=Post1"
-          user={{
-            uid: 1,
-            img: 'https://dummyimage.com/40x40/fff/000.png&text=User1',
-            name: 'User1',
-          }}
+          {...this.state}
+          // text="投稿です。"
+          // fileUri="https://dummyimage.com/400x400/000/fff.png&text=Post1"
+          // user={{
+          //   uid: 1,
+          //   img: 'https://dummyimage.com/40x40/fff/000.png&text=User1',
+          //   name: 'User1',
+          // }}
           onUserPress={this.onUserPress}
           onMorePress={this.onMorePress}
           onLikePress={this.onLikePress}

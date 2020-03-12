@@ -192,7 +192,10 @@ class Firebase {
 
   getPost = async (pid = '0') => {
     try {
-      const post = await this.post.doc(pid).get();
+      const post = await this.post
+        .doc(`${pid}`)
+        .get()
+        .then((res) => res.data());
       const user = await post.user.get().then((res) => res.data());
 
       user.uid = post.user.id;
@@ -370,9 +373,9 @@ class Firebase {
 
             this.notification.add({
               type: 'like',
-              uid: doc.id,
-              post: this.post.doc(`${item.pid}`),
-              from: this.user.doc(`${item.uid}`),
+              uid: item.user.uid, // いいねされたpostのuser 検索用
+              post: this.post.doc(`${item.pid}`), // いいねされたpost
+              from: this.user.doc(`${this.uid}`), // いいねを押したuser
               timestamp: Date.now(),
             });
 
@@ -387,7 +390,7 @@ class Firebase {
             const snapshot = await this.notification
               .where('type', '==', 'like')
               .where('post', '==', this.post.doc(`${item.pid}`))
-              .where('from', '==', this.user.doc(`${item.uid}`))
+              .where('from', '==', this.user.doc(`${this.uid}`))
               .get();
 
             await Promise.all(
@@ -401,6 +404,58 @@ class Firebase {
         });
 
       return liked;
+    } catch (e) {
+      console.error(e.message);
+      return { error: e.message };
+    }
+  };
+
+  getNotification = async (cursor = null, limit = 20) => {
+    try {
+      // いいねされた自分の投稿
+      const ref = this.notification
+        .where('uid', '==', this.uid)
+        .orderBy('timestamp', 'desc')
+        .limit(limit);
+
+      if (cursor) {
+        ref = ref.startAfter(cursor);
+      }
+
+      const snapshot = await ref.get();
+      const data = [];
+      await Promise.all(
+        snapshot.docs.map(async (doc) => {
+          if (doc.exists) {
+            const notification = doc.data() || {};
+            const post = await notification.post
+              .get()
+              .then((res) => res.data());
+            const from = await notification.from
+              .get()
+              .then((res) => res.data());
+
+            data.push({
+              key: doc.id,
+              post: {
+                pid: notification.post.id,
+                type: post.type,
+                file: post.fileUri,
+              },
+              from: {
+                uid: notification.from.id,
+                name: from.name,
+                img: from.img,
+              },
+            });
+          }
+        })
+      );
+
+      const datalen = snapshot.length;
+      const lastVisible = datalen > 0 ? snapshot.docs[datalen - 1] : null;
+
+      return { data, cursor: lastVisible };
     } catch (e) {
       console.error(e.message);
       return { error: e.message };
