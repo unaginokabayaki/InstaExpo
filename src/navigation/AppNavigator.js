@@ -4,6 +4,8 @@ import {
   createStackNavigator,
   TransitionPresets,
 } from '@react-navigation/stack';
+import { Notifications } from 'expo';
+import * as Permissions from 'expo-permissions';
 
 import MainTabNavigator from 'app/src/navigation/MainTabNavigator';
 import UserScreen from 'app/src/screens/UserScreen';
@@ -50,10 +52,33 @@ function AppNavigator(props) {
       console.log(user);
       props.setMe(user);
     })();
+  }, []);
 
-    // (async () => {
-    //   console.log('app navigator updated');
-    // })();
+  React.useEffect(() => {
+    (async () => {
+      const { status: existingStatus } = await Permissions.getAsync(
+        Permissions.NOTIFICATIONS
+      );
+      let finalStatus = existingStatus;
+      console.log(finalStatus);
+      // パーミッションダイアログ表示
+      if (existingStatus !== 'granted') {
+        const { stuatus } = await Permissions.askAsync(
+          Permissions.NOTIFICATIONS
+        );
+        finalStatus = stuatus;
+      }
+
+      if (finalStatus !== 'granted') {
+        return;
+      }
+
+      // デバイストークン取得してfirebaseに保存
+      const deviceToken = await Notifications.getExpoPushTokenAsync();
+      if (deviceToken) {
+        firebase.updateUserToken(deviceToken);
+      }
+    })();
   }, []);
 
   return (

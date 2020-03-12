@@ -1,5 +1,6 @@
 import * as Random from 'expo-random';
 import Constants from 'expo-constants';
+import * as Localization from 'expo-localization';
 // import * as firebase from 'firebase';
 // import firebase from 'firebase';
 import * as firebase from 'firebase';
@@ -456,6 +457,22 @@ class Firebase {
       const lastVisible = datalen > 0 ? snapshot.docs[datalen - 1] : null;
 
       return { data, cursor: lastVisible };
+    } catch (e) {
+      console.error(e.message);
+      return { error: e.message };
+    }
+  };
+
+  updateUserToken = async (deviceToken = null) => {
+    const { locale } = Localization;
+    console.log(locale);
+    try {
+      this.user.doc(`${this.uid}`).update({
+        deviceToken,
+        locale,
+      });
+
+      return true;
     } catch (e) {
       console.error(e.message);
       return { error: e.message };
