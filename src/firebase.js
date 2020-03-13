@@ -464,6 +464,7 @@ class Firebase {
   };
 
   updateUserToken = async (deviceToken = null) => {
+    console.log(deviceToken);
     const { locale } = Localization;
     console.log(locale);
     try {
