@@ -1,5 +1,10 @@
 import * as React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import { Alert } from 'react-native';
+import {
+  NavigationContainer,
+  CommonActions,
+  useNavigation,
+} from '@react-navigation/native';
 import {
   createStackNavigator,
   TransitionPresets,
@@ -45,6 +50,7 @@ export function MainStackNavigator() {
 }
 
 function AppNavigator(props) {
+  const ref = React.useRef(null);
   // const [me, setMe] = React.useState({ uid: '', name: '', image: '' });
   React.useEffect(() => {
     (async () => {
@@ -81,13 +87,46 @@ function AppNavigator(props) {
     })();
   }, []);
 
+  React.useEffect(() => {
+    (() => {
+      const subscribeNotification = (notification) => {
+        // const { dispatch, navigation } = props;
+        const { data = {} } = notification;
+        const { screen = null } = data;
+        console.log('tap notification');
+        console.log(notification);
+        console.log(props);
+        console.log(ref.current);
+
+        if (notification.origin === 'selected') {
+          if (screen) {
+            // アプリがバックグラウンドまたは、開かれていない状態で通知を開いた場合
+            ref.current?.navigate(screen);
+            // navigation.navigate({}});
+          } else if (notification.origin === 'received') {
+            // アプリが開かれている場合
+            Alert.alert('新しい通知があります', '今すぐ確認しますか？', [
+              { text: 'No', style: 'cancel' },
+              {
+                text: 'Yes',
+                onPress: () => {
+                  if (screen) {
+                    ref.current?.navigate(screen);
+                    // navigation.navigate({ routeName: screen });
+                  }
+                },
+              },
+            ]);
+          }
+        }
+      };
+
+      Notifications.addListener(subscribeNotification);
+    })();
+  }, []);
+
   return (
-    <NavigationContainer
-      onStateChange={(state) => {
-        // console.log('app navigator updated');
-        // console.log('state is ' + state);
-      }}
-    >
+    <NavigationContainer onStateChange={(state) => {}}>
       <RootStack.Navigator
         initialRouteName="MainStack"
         screenOptions={{
