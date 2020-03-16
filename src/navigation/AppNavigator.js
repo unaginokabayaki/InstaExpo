@@ -4,6 +4,7 @@ import {
   NavigationContainer,
   CommonActions,
   useNavigation,
+  useLinking,
 } from '@react-navigation/native';
 import {
   createStackNavigator,
@@ -38,7 +39,13 @@ export function TakeStackNavigator() {
   );
 }
 
-export function MainStackNavigator() {
+export function MainStackNavigator(props) {
+  React.useEffect(() => {
+    (() => {
+      console.log(props);
+    })();
+  }, []);
+
   return (
     <MainStack.Navigator initialRouteName="Main">
       <MainStack.Screen name="Main" component={MainTabNavigator} />
@@ -51,6 +58,51 @@ export function MainStackNavigator() {
 
 function AppNavigator(props) {
   const ref = React.useRef(null);
+  // const { getInitialState } = useLinking(ref, {
+  //   prefixes: ['insta://'],
+  //   config: {
+  //     MainStack: {
+  //       path: 'MainStack',
+  //       initialRouteName: 'Main',
+  //       screen: {
+  //         Main: 'Main',
+  //         User: 'User',
+  //         Tag: 'Tag',
+  //         Post: 'Post',
+  //       },
+  //     },
+  //     TakeStack: {
+  //       path: 'TakeStack',
+  //       initialRouteName: 'take',
+  //       screens: {
+  //         Take: 'Take',
+  //         Pub: 'Pub',
+  //       },
+  //     },
+  //   },
+  // });
+
+  console.log(ref);
+  // const [isReady, setIsReady] = React.useState(false);
+  // const [initialState, setInitialState] = React.useState();
+
+  // React.useEffect(() => {
+  //   Promise.race([
+  //     getInitialState(),
+  //     new Promise((resolve) => setTimeout(resolve, 150)),
+  //   ])
+  //     .then((state) => {
+  //       if (state !== undefined) {
+  //         setInitialState(state);
+  //       }
+
+  //       setIsReady(true);
+  //     })
+  //     .catch((e) => {
+  //       console.error(e);
+  //     });
+  // }, [getInitialState]);
+
   // const [me, setMe] = React.useState({ uid: '', name: '', image: '' });
   React.useEffect(() => {
     (async () => {
@@ -95,13 +147,19 @@ function AppNavigator(props) {
         const { screen = null } = data;
         console.log('tap notification');
         console.log(notification);
+        console.log(ref);
         console.log(props);
-        console.log(ref.current);
 
         if (notification.origin === 'selected') {
           if (screen) {
             // アプリがバックグラウンドまたは、開かれていない状態で通知を開いた場合
-            ref.current?.navigate(screen);
+            // eslint-disable-next-line no-unused-expressions
+            ref.current?.navigate('MainStack', {
+              screen: 'Main',
+              params: {
+                screen: 'NotificationTab',
+              },
+            });
             // navigation.navigate({}});
           } else if (notification.origin === 'received') {
             // アプリが開かれている場合
@@ -111,8 +169,13 @@ function AppNavigator(props) {
                 text: 'Yes',
                 onPress: () => {
                   if (screen) {
-                    ref.current?.navigate(screen);
-                    // navigation.navigate({ routeName: screen });
+                    // eslint-disable-next-line no-unused-expressions
+                    ref.current?.navigate('MainStack', {
+                      screen: 'Main',
+                      params: {
+                        screen: 'NotificationTab',
+                      },
+                    });
                   }
                 },
               },
@@ -126,7 +189,11 @@ function AppNavigator(props) {
   }, []);
 
   return (
-    <NavigationContainer onStateChange={(state) => {}}>
+    <NavigationContainer
+      // initialState={initialState}
+      onStateChange={(state) => {}}
+      ref={ref}
+    >
       <RootStack.Navigator
         initialRouteName="MainStack"
         screenOptions={{
