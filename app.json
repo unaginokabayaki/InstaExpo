@@ -32,14 +32,6 @@
       "backgroundColor": "#fafafa",
       "textColor": "#454545",
       "firebase": {
-        "apiKey": "AIzaSyBE3fya7AEeBjcNMofj9s6Uyo1VbKUym1M",
-        "authDomain": "insta-expo-e3391.firebaseapp.com",
-        "databaseURL": "https://insta-expo-e3391.firebaseio.com",
-        "projectId": "insta-expo-e3391",
-        "storageBucket": "insta-expo-e3391.appspot.com",
-        "messagingSenderId": "232273623234",
-        "appId": "1:232273623234:web:8760ae9411c28a6ab9e35b",
-        "measurementId": "G-P4YJX3RR7N"
       }
     }
   }
