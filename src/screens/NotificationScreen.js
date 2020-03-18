@@ -73,7 +73,7 @@ class NotificationScreen extends React.Component {
   }
 
   componentDidMount() {
-    // Notifications.setBadgeNumberAsync(0);
+    Notifications.setBadgeNumberAsync(0);
 
     this.getNotification();
   }
