@@ -5,6 +5,16 @@ import * as Localization from 'expo-localization';
 // import firebase from 'firebase';
 import * as firebase from 'firebase';
 import 'firebase/firestore';
+import {
+  apiKey,
+  authDomain,
+  databaseURL,
+  projectId,
+  storageBucket,
+  messagingSenderId,
+  appId,
+  measurementId,
+} from 'react-native-dotenv';
 
 // Firebaseのバージョンに注意
 class Firebase {
@@ -481,5 +491,17 @@ class Firebase {
   };
 }
 
-const fire = new Firebase(Constants.manifest.extra.firebase);
+const options = {
+  apiKey,
+  authDomain,
+  databaseURL,
+  projectId,
+  storageBucket,
+  messagingSenderId,
+  appId,
+  measurementId,
+};
+
+const fire = new Firebase(options);
+
 export default fire;
